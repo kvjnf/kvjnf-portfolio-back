@@ -1,0 +1,93 @@
+#version: '3'
+version: '2'
+services:
+  # proxy:
+  #   image: nginx:alpine
+  #   ports:
+  #     - "8888:80"
+  #   volumes:
+  #     - ${NGINX_FILES_PATH}/conf.d/default.conf:/etc/nginx/conf.d/default.conf
+  #     - ${NGINX_FILES_PATH}/html:/usr/share/nginx/html
+  #   networks:
+  #     - proxy
+  #     - backend
+  #   restart: always
+
+  # front:
+  #   build:
+  #     dockerfile: Dockerfile.dev
+  #     context: ./front
+  #   volumes:
+  #     - /app/node_modules
+  #     - ./front:/app
+  #   networks: 
+  #     - proxy
+
+  mysql:
+    image: mysql:5.7.24
+    ports:
+      - "3306:3306"
+    volumes:
+      - portfolio_data:/var/lib/mysql
+      - ./mysql/db-data:/docker-entrypoint-initdb.d
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: portfolio
+      MYSQL_USER: docker
+      MYSQL_PASSWORD: docker
+      TZ: 'Asia/Tokyo'
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    networks:
+      - backend
+
+  wordpress:
+    build: ./wp
+    volumes:
+      - ./wp/themes/kvjnf:/var/www/html/wp-content/themes/kvjnf
+      - ./wp/plugins:/var/www/html/wp-content/plugins  
+    ports:
+      - "8000:80"
+    environment:
+      WORDPRESS_DB_HOST: mysql:3306
+      WORDPRESS_DB_PASSWORD: docker
+      WORDPRESS_DB_USER: docker
+      WORDPRESS_DB_NAME: portfolio
+    networks:
+      - backend
+  # wpnginx:
+  #   image: nginx:alpine
+  #   ports:
+  #     - "8000:80"
+  #   depends_on:
+  #     - wordpress
+  #   volumes:
+  #     - ${NGINX_FILES_PATH}/wpconf.d/default.conf:/etc/nginx/conf.d/default.conf
+  #   volumes_from:
+  #     - wordpress
+  #     #     - contents:/usr/share/nginx/html
+  #   networks:
+  #     - backend
+
+  # phpmyadmin:
+  #   image: phpmyadmin/phpmyadmin
+  #   environment:
+  #     PMA_HOST: mysql
+  #     PMA_PORT: 3306
+  #     PMA_USER: docker
+  #     PMA_PASSWORD: docker
+  #     PMA_ARBITRARY: 1
+  #     PMA_ABSOLUTE_URI: http://localhost:5000/
+  #   ports:
+  #     - 5000:80
+  #   networks:
+  #     - backend
+
+volumes:
+  portfolio_data: {}
+#  contents:
+
+networks:
+  backend:
+    driver: bridge
+  proxy:
+    driver: bridge
