@@ -9,7 +9,5 @@ RUN rm -fr /usr/src/wordpress \
  && chown -R www-data:www-data /usr/src/wordpress \
  && mkdir /usr/src/wordpress/wp-content/uploads
 
-# 必要なファイルをコピー
-COPY --chown=www-data:www-data ./plugins/ /usr/src/wordpress/wp-content/plugins/
-COPY --chown=www-data:www-data ./themes/kvjnf /usr/src/wordpress/wp-content/themes/kvjnf
-COPY --chown=www-data:www-data ./wp-config.php /usr/src/wordpress/wp-config.php
+# ボリューム化
+VOLUME /var/www/html

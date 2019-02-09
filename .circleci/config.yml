@@ -1,34 +1,45 @@
 version: 2
 
-
 workflows:
-  build_test_deploy:
-   - build_test
+  version: 2
+  build-deploy:
+    jobs:
+      - wp-build:
+          filters:
+            branches:
+              only: master
+
+
 jobs:
   wp-build:
     machine: true
     steps:
       - checkout
-      - restore_cache:
-          key: v1-{{ checksum "requirements.txt" }}
       - run:
-          name: Install the AWS CLI
+          name: Install AWS CLI
+          command: | 
+            sudo apt-get -y -qq update
+            sudo apt-get install python-pip python-dev build-essential
+            sudo pip install awscli
+      - run:
+          name: Set AWS CLI
           command: |
-            python3 -m venv venv
-            . venv/bin/activate
-            pip install -r requirements.txt
-      - save_cache:
-          key: v1-{{ checksum "requirements.txt" }}
-          paths:
-            - "venv"
+            aws configure set aws_access_key_id $AWS_ACCESS_KEY --profile deploy-user
+            aws configure set aws_secret_access_key $AWS_SECRET_KEY --profile deploy-user
+            aws configure set default.region $AWS_DEFAULT_REGION
+      - run:
+          name: Login AWS ECR
+          command: $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email --profile deploy-user)
       - run:
           name: Build WPImage
           command: |
-            docker build -t ${DOCKER_TAG} ./wp/
-
-workflows:
-  version: 2
-  build-all:
-    jobs:
-      - wp-build
+            [ "${CIRCLE_TAG}" != "" ] && TAG=${CIRCLE_TAG} || TAG=latest
+            sudo docker build -t portfolio-back:$TAG ./wp/
+            sudo docker tag portfolio-back:$TAG $ECR_BACK:$TAG
+      - run:
+          name: Check Images
+          command: docker images
+      - run:
+          name: Push image to ECR
+          command: sudo docker push $ECR_BACK:$TAG
           
