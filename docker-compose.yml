@@ -1,5 +1,4 @@
-#version: '3'
-version: '2'
+version: '3.6'
 services:
   # proxy:
   #   image: nginx:alpine
@@ -44,14 +43,15 @@ services:
     build: ./wp
     volumes:
       - ./wp/themes/kvjnf:/var/www/html/wp-content/themes/kvjnf
-      - ./wp/plugins:/var/www/html/wp-content/plugins  
+      - ./wp/plugins:/var/www/html/wp-content/plugins
+      - ./wp/wp-config.php:/var/www/html/wp-config.php
     ports:
       - "8000:80"
     environment:
-      WORDPRESS_DB_HOST: mysql:3306
-      WORDPRESS_DB_PASSWORD: docker
-      WORDPRESS_DB_USER: docker
-      WORDPRESS_DB_NAME: portfolio
+      DB_HOST: mysql:3306
+      DB_PASSWORD: docker
+      DB_USER: docker
+      DB_NAME: portfolio
     networks:
       - backend
   # wpnginx:

@@ -1,0 +1,34 @@
+version: 2
+
+
+workflows:
+  build_test_deploy:
+   - build_test
+jobs:
+  wp-build:
+    machine: true
+    steps:
+      - checkout
+      - restore_cache:
+          key: v1-{{ checksum "requirements.txt" }}
+      - run:
+          name: Install the AWS CLI
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install -r requirements.txt
+      - save_cache:
+          key: v1-{{ checksum "requirements.txt" }}
+          paths:
+            - "venv"
+      - run:
+          name: Build WPImage
+          command: |
+            docker build -t ${DOCKER_TAG} ./wp/
+
+workflows:
+  version: 2
+  build-all:
+    jobs:
+      - wp-build
+          
