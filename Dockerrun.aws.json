@@ -3,7 +3,7 @@
   "containerDefinitions": [
     {
       "name": "wordpress",
-      "image": "814045637828.dkr.ecr.eu-central-1.amazonaws.com/portfolio-back",
+      "image": "814045637828.dkr.ecr.eu-central-1.amazonaws.com/portfolio-back:latest",
       "hostname": "client",
       "essential": true,
       "memory": 128,
