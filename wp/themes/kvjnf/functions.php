@@ -19,8 +19,6 @@ function my_customize_rest_cors() {
 	add_filter( 'rest_pre_serve_request', function( $value ) {
 		header( 'Access-Control-Allow-Origin: *' );
 		header( 'Access-Control-Allow-Methods: GET' );
-        header( 'Access-Control-Allow-Headers: X-Requested-With' );
-		header( 'Access-Control-Expose-Headers: Link', false );
 		return $value;
 	} );
 }
